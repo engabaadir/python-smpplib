@@ -391,7 +391,12 @@ class Client(object):
     def listen(self, ignore_error_codes=None, auto_send_enquire_link=True):
         """Listen for PDUs and act"""
         while True:
-            self.read_once(ignore_error_codes, auto_send_enquire_link)
+            try:
+                self.read_once(ignore_error_codes, auto_send_enquire_link)
+            except exceptions.UnknownCommandError as e:
+                self.logger.warning('Ignoring unknown SMPP command: "%s"', e)
+            except exceptions.ConnectionError as e:
+                self.logger.error('Connection lost, reconnecting... "%s"', e)
 
     def send_message(self, **kwargs):
         """Send message
